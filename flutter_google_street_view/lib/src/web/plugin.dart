@@ -60,10 +60,14 @@ class FlutterGoogleStreetViewPlugin {
     try {
       options = await toStreetViewPanoramaOptions(arg);
     } catch (exception) {
-      NoStreetViewException noStreetViewException =
-          (exception as NoStreetViewException);
-      options = noStreetViewException.options..visible = false;
-      errorMsg = noStreetViewException.errorMsg;
+      if (exception is NoStreetViewException) {
+        options = exception.options..visible = false;
+        errorMsg = exception.errorMsg;
+      } else {
+        // Handle other types of exceptions (like NativeError from JS)
+        options = street_view.StreetViewPanoramaOptions()..visible = false;
+        errorMsg = 'Failed to initialize Street View: ${exception.toString()}';
+      }
     }
 
     Completer<bool> initDone = Completer();
@@ -77,10 +81,16 @@ class FlutterGoogleStreetViewPlugin {
         fakeOptions = await toStreetViewPanoramaOptions(arg)
           ..visible = false;
       } catch (exception) {
-        NoStreetViewException noStreetViewException =
-            (exception as NoStreetViewException);
-        fakeOptions = noStreetViewException.options..visible = false;
-        errorMsg = noStreetViewException.errorMsg;
+        if (exception is NoStreetViewException) {
+          fakeOptions = exception.options..visible = false;
+          errorMsg = exception.errorMsg;
+        } else {
+          // Handle other types of exceptions (like NativeError from JS)
+          fakeOptions = street_view.StreetViewPanoramaOptions()
+            ..visible = false;
+          errorMsg =
+              'Failed to initialize Street View: ${exception.toString()}';
+        }
       }
       _streetViewPanorama.options = fakeOptions;
     }
